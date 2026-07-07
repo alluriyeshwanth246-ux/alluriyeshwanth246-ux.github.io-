@@ -23,3 +23,37 @@
   const supabaseKey = window.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY ||eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bmdtcWJ3bmhyZWNjeHZob2p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzYyMDMsImV4cCI6MjA5ODkxMjIwM30.GvtHlA6pzR_Kpood7gccglsC4fFvH4gbJsiyQnIs82Q;
   const supabase = supabaseServer.createClient(supabaseUrl, supabaseKey);
 </script>
+async function loadMenu() {
+  // 1. Fetch menu items from Supabase
+  const { data: menuItems, error } = await supabase
+    .from('menu_items')
+    .select('*');
+
+  if (error) {
+    console.error('Error fetching menu:', error);
+    return;
+  }
+
+  // 2. Find your menu container element (Make sure your HTML menu grid has id="menu-container")
+  const menuContainer = document.getElementById('menu-container');
+  if (!menuContainer) return;
+  
+  menuContainer.innerHTML = ''; // Clear existing static items
+
+  // 3. Loop through your live database items and render them
+  menuItems.forEach(item => {
+    const itemCard = `
+      <div class="menu-card">
+        <img src="${item.image_url}" alt="${item.name}" class="menu-img">
+        <h3>${item.name}</h3>
+        <p>${item.description}</p>
+        <span class="price">₹${item.price}</span>
+        <button onclick="addToCart('${item.id}', '${item.name}', ${item.price})">Add to Cart</button>
+      </div>
+    `;
+    menuContainer.insertAdjacentHTML('beforeend', itemCard);
+  });
+}
+
+// Call the function automatically when the website loads
+document.addEventListener('DOMContentLoaded', loadMenu);
