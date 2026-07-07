@@ -19,9 +19,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Initialize Supabase Connection safely using Vercel injected keys -->
 <script>
-  const supabaseUrl = window.env?.NEXT_PUBLIC_SUPABASE_URL ||"https://wxngmqbwnhreccxvhojv.supabase.co";
-  const supabaseKey = window.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY ||"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bmdtcWJ3bmhyZWNjeHZob2p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzYyMDMsImV4cCI6MjA5ODkxMjIwM30.GvtHlA6pzR_Kpood7gccglsC4fFvH4gbJsiyQnIs82Q";
-  const supabase = supabaseServer.createClient(supabaseUrl, supabaseKey);
+  const supabaseUrl = "https://wxngmqbwnhreccxvhojv.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc2MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxN2Fub25mZmZzZSIImFub24iLCJpY00zQiQiOjE3ODMzMzYyMDMsImV4cCI6M2CcCI6MjA1ODkxMjIwM30.GvtHlA6pzR_Kpood7gccglsC4fFvH4gbJsiyQnIs82Q";
+  
+  // Note: Using supabase.createClient here to correctly invoke the library!
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 </script>
 async function loadMenu() {
   // 1. Fetch menu items from Supabase
