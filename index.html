@@ -27,9 +27,7 @@
 </script>
 async function loadMenu() {
   // 1. Fetch menu items from Supabase
-      const { data: menuItems, error } = await supabaseClient
-      .from('menu_items')
-      .select('*');
+  const { data: menuItems, error } = await supabaseClient.from('menu_items').select('*');
 
   if (error) {
     console.error('Error fetching menu:', error);
