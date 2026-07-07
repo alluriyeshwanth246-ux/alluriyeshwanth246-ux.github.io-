@@ -19,34 +19,22 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    // 1. Initialize Safe Global Connection Context Variables
     const supabaseUrl = "https://wxngmqbwnhreccxvhojv.supabase.co";
     const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc2MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxN2Fub25mZmZzZSIImFub24iLCJpY00zQiQiOjE3ODMzMzYyMDMsImV4cCI6M2CcCI6MjA1ODkxMjIwM30.GvtHlA6pzR_Kpood7gccglsC4fFvH4gbJsiyQnIs82Q";
     
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // 2. Main Query Function to Query Database Tables and Hydrate Frontend Target Elements
+    // 1. Function to load menu items onto the screen
     async function loadMenu() {
       try {
-        const { data: menuItems, error } = await supabaseClient
-          .from('menu_items')
-          .select('*');
+        const { data: menuItems, error } = await supabaseClient.from('menu_items').select('*');
+        if (error) return;
 
-        if (error) {
-          console.error('Error fetching data from backend table instances:', error);
-          return;
-        }
-
-        // Dynamically locate target menu wrapper container grid target
         const menuContainer = document.getElementById('menu-container');
-        if (!menuContainer) {
-          console.warn('Target menu layout selector wrapper "menu-container" container DOM reference not found on screen yet.');
-          return;
-        }
+        if (!menuContainer) return;
         
-        menuContainer.innerHTML = ''; // Safely wipe old hardcoded layout placeholders
+        menuContainer.innerHTML = '';
 
-        // Loop through all records retrieved from Supabase and print them out seamlessly
         menuItems.forEach(item => {
           const itemCard = `
             <div class="menu-card">
@@ -60,12 +48,44 @@
           menuContainer.insertAdjacentHTML('beforeend', itemCard);
         });
       } catch (err) {
-        console.error('Unexpected structural thread blocking exception handler caught:', err);
+        console.error(err);
       }
     }
 
-    // Bind event hooks to run dynamically on completion event cycle callbacks
+    // 2. Automated Checkout Interceptor (Saves orders to Supabase)
+    async function handleOnlineCheckout(event) {
+      // Look for a checkout or place order button click
+      const target = event.target;
+      if (target && (target.innerText.toLowerCase().includes('place order') || target.innerText.toLowerCase().includes('checkout'))) {
+        
+        // Grab values from input fields if they exist on the screen
+        const nameInput = document.querySelector('input[placeholder*="Name"]') || document.querySelector('input[type="text"]');
+        const phoneInput = document.querySelector('input[placeholder*="Phone"]') || document.querySelector('input[type="tel"]');
+        const totalElement = document.querySelector('.total-price') || document.querySelector('[class*="total"]');
+
+        const customerName = nameInput ? nameInput.value : "Online Customer";
+        const phone = phoneInput ? phoneInput.value : "No Phone Provided";
+        const totalAmount = totalElement ? parseFloat(totalElement.innerText.replace(/[^0-9.]/g, '')) : 0;
+
+        // Save order data directly into your Supabase orders table
+        try {
+          await supabaseClient.from('orders').insert([{
+            customer_name: customerName,
+            phone: phone,
+            total_amount: totalAmount,
+            payment_status: 'pending',
+            items: { description: "Order submitted via web portal checkout button click" }
+          }]);
+          console.log("Order securely tracked in Supabase database!");
+        } catch (dbError) {
+          console.error("Database tracking failed:", dbError);
+        }
+      }
+    }
+
+    // Bind listeners safely
     document.addEventListener('DOMContentLoaded', loadMenu);
+    document.addEventListener('click', handleOnlineCheckout);
   </script>
 
   <script type="module" crossorigin src="./index-CS_Uzv2Q.js"></script>
