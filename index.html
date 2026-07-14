@@ -19,15 +19,17 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    const supabaseUrl = "https://wxngmqbwnhreccxvhojv.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bmdtcWJ3bmhyZWNjeHZob2p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNzE3OTMsImV4cCI6MjA1Njg0Nzc5M30.GvtICdApzB_5qood7gcq1sC4fTv4q0utsQnEsBIOI0Q";
-
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-    // 1. Load menu items from database
+    // 1. Load menu items from database safely
     async function loadMenu() {
       try {
-        const { data: menuItems, error } = await supabaseClient
+        // Fallback to global supabase client if already initialized by the bundle
+        const client = window.supabaseClient || (typeof supabase !== 'undefined' && supabase.createClient 
+          ? supabase.createClient("https://wxngmqbwnhreccxvhojv.supabase.co", window.supabaseKey || "") 
+          : null);
+          
+        if (!client) return;
+
+        const { data: menuItems, error } = await client
           .from('menu_items')
           .select('*');
           
@@ -55,12 +57,11 @@
       }
     }
 
-    // 2. Direct instant checkout handler via whatsapp
+    // 2. Direct instant checkout handler via WhatsApp
     function handleOnlineCheckout(event) {
       const target = event.target;
       if (target && (target.innerText.toLowerCase().includes('place order') || target.innerText.toLowerCase().includes('checkout'))) {
         
-        // Target typical inputs generated inside the React bundle
         const nameInput = document.querySelector('input[placeholder*="Name"]') || document.querySelector('input[type="text"]');
         const phoneInput = document.querySelector('input[placeholder*="Phone"]') || document.querySelector('input[type="tel"]');
         const totalElement = document.querySelector('.total-price') || document.querySelector('[class*="total"]') || document.querySelector('h3');
@@ -69,19 +70,16 @@
         const customerPhone = phoneInput && phoneInput.value.trim() ? phoneInput.value : "Not Specified";
         const totalAmount = totalElement ? totalElement.innerText : "Check Application Cart";
 
-        // Your specific Whatsapp Number attached directly
         const myPhoneNumber = "919948058392";
 
-        // Build string notification text string format
         const messageText = `🚨 *New Order - Golden Bakery* 🚨\n\n👤 *Name:* ${customerName}\n📞 *Phone:* ${customerPhone}\n💰 *Total bill amount:* ${totalAmount}\n\nPlease accept and process my order!`;
         const encodedMessage = encodeURIComponent(messageText);
 
-        // Fire active external application context forward seamlessly
         window.open(`https://wa.me/${myPhoneNumber}?text=${encodedMessage}`, '_blank');
       }
     }
 
-    // Initialize triggers clearly
+    // Initialize triggers cleanly
     document.addEventListener('DOMContentLoaded', loadMenu);
     document.addEventListener('click', handleOnlineCheckout);
   </script>
